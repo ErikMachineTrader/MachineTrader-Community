@@ -1,0 +1,153 @@
+[
+    {
+        "id": "fed0736be354a253",
+        "type": "comment",
+        "z": "9dfc0e947da8f0a3",
+        "name": "Alpaca Rate Limit. Alpaca only allows 200 queries per minute. This global variable tracks the current rate limit remaining.",
+        "info": "",
+        "x": 490,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "e8949fe96a72b8c1",
+        "type": "inject",
+        "z": "9dfc0e947da8f0a3",
+        "name": "GO",
+        "props": [],
+        "repeat": "60",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 150,
+        "y": 260,
+        "wires": [
+            [
+                "3511d754a33ace1f"
+            ]
+        ]
+    },
+    {
+        "id": "3511d754a33ace1f",
+        "type": "alpaca-position-query",
+        "z": "9dfc0e947da8f0a3",
+        "conf": "c06cec183f9317f9",
+        "symbol": "",
+        "x": 330,
+        "y": 260,
+        "wires": [
+            [
+                "87356ade4c1fb37b"
+            ]
+        ]
+    },
+    {
+        "id": "87356ade4c1fb37b",
+        "type": "function",
+        "z": "9dfc0e947da8f0a3",
+        "name": "display rate limit remaining",
+        "func": "//node.warn(\"msg.headers.x - ratelimit - remaining\")\nvar thisRate = parseInt(msg[\"headers\"][\"x-ratelimit-remaining\"])\nvar thisLimit = parseInt(msg[\"headers\"][\"x-ratelimit-limit\"])\n//msg[\"headers\"][\"x-ratelimit-remaining\"] = num\nnode.warn(msg[\"headers\"][\"x-ratelimit-remaining\"])\n\n// store rate_limit as a global\nglobal.set(\"rate_limit\", thisRate)\nglobal.set(\"limit\",thisLimit)\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b3a6d9e06a168c7f",
+        "type": "pts_oauth_browser",
+        "z": "9dfc0e947da8f0a3",
+        "callback": "",
+        "redirect": "",
+        "name": "Documentation Link",
+        "x": 400,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "83b1d1691ae75bca",
+        "type": "inject",
+        "z": "9dfc0e947da8f0a3",
+        "name": "Click Here to Open",
+        "props": [
+            {
+                "p": "redirect",
+                "v": "https://docs.google.com/document/d/1xeljzgRRY0pPp1dHd5_fbbattzkbXFVKT6eqLf0FtdE/view",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 190,
+        "y": 220,
+        "wires": [
+            [
+                "b3a6d9e06a168c7f"
+            ]
+        ]
+    },
+    {
+        "id": "b89d3399a289033c",
+        "type": "function",
+        "z": "9dfc0e947da8f0a3",
+        "name": "rate limit function",
+        "func": "let rate_limit = global.get(\"rate_limit\")\n//let limit = global.get(\"limit\")\nlet lowWarning = 20\n\nif (rate_limit > lowWarning) {node.warn(\"Remaining calls: \" + rate_limit)}\n\nelse if (rate_limit > 0 && rate_limit <= lowWarning){node.warn(\"Approaching Alpaca rate limit \\nRemaining calls: \" + rate_limit)}\n\nelse{node.warn(\"Rate limit exceeded.\")}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "2a60ba122a045859",
+        "type": "inject",
+        "z": "9dfc0e947da8f0a3",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 160,
+        "y": 300,
+        "wires": [
+            [
+                "b89d3399a289033c"
+            ]
+        ]
+    },
+    {
+        "id": "c06cec183f9317f9",
+        "type": "alpaca-account",
+        "name": "paper",
+        "keyId": "PKTHNXXL4XELSM6LRVUK",
+        "paper": true
+    }
+]
